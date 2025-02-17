@@ -3,9 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>精品商店</title>
+    <title>全功能电商平台</title>
     <style>
-        /* 之前的样式保持不变 */
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 商品展示 */
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        /* 购物车样式 */
+        .cart {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quantity-control input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 5px;
+        }
+
+        /* 模态框样式 */
         .modal {
             display: none;
             position: fixed;
@@ -22,85 +106,81 @@
             background: white;
             padding: 20px;
             border-radius: 10px;
-            max-width: 400px;
-            width: 100%;
+            max-width: 600px;
+            width: 90%;
         }
 
-        .close-button {
-            float: right;
-            cursor: pointer;
+        /* 支付相关样式 */
+        .payment-qr {
+            text-align: center;
+            margin: 20px 0;
         }
-
-        .payment-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .payment-method {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
+        
+        .payment-qr img {
+            width: 200px;
+            height: 200px;
             border: 1px solid #ddd;
+            padding: 10px;
             border-radius: 5px;
-            cursor: pointer;
         }
 
-        .payment-method img {
-            width: 40px;
-            height: 40px;
-        }
-
-        .payment-method.selected {
-            border-color: #4CAF50;
-            background-color: #f0fff0;
+        .payment-timer {
+            color: #666;
+            text-align: center;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>欢迎来到精品商店</h1>
+        <h1>欢迎来到电商平台</h1>
     </header>
 
     <div class="container">
-        <div class="products" id="productList">
-            <!-- 商品将通过JavaScript动态加载 -->
-        </div>
+        <!-- 商品列表 -->
+        <div class="products" id="productList"></div>
 
+        <!-- 购物车 -->
         <div class="cart">
             <h2>购物车 (<span id="cartCount">0</span>)</h2>
             <ul id="cartItems"></ul>
             <p>总价: ￥<span id="totalPrice">0</span></p>
-            <button onclick="openPaymentModal()">立即结算</button>
+            <button onclick="showPayment()">去结算</button>
         </div>
     </div>
 
     <!-- 商品详情模态框 -->
-    <div class="modal" id="productModal">
+    <div class="modal" id="detailModal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeModal()">&times;</span>
-            <div id="modalContent"></div>
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="detailContent"></div>
         </div>
     </div>
 
-    <!-- 支付方式选择模态框 -->
+    <!-- 支付模态框 -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
-            <span class="close-button" onclick="closePaymentModal()">&times;</span>
+            <span class="close" onclick="closePayment()">&times;</span>
             <h2>选择支付方式</h2>
+            
             <div class="payment-methods">
-                <div class="payment-method" onclick="selectPayment('wechat')">
-                    <img src="606.jpg" alt="微信支付">
-                    <span>微信支付</span>
+                <div class="payment-qr" id="wechatPay">
+                    <h3>微信支付</h3>
+                    <!-- 替换为你的微信收款码 -->
+                    <img src="wechat-qr.png" alt="微信收款码">
                 </div>
-                <div class="payment-method" onclick="selectPayment('alipay')">
-                    <img src="https://img.icons8.com/color/48/000000/alipay.png" alt="支付宝支付">
-                    <span>支付宝支付</span>
+                
+                <div class="payment-qr" id="alipayPay">
+                    <h3>支付宝支付</h3>
+                    <!-- 替换为你的支付宝收款码 -->
+                    <img src="alipay-qr.png" alt="支付宝收款码">
                 </div>
             </div>
-            <button onclick="processPayment()" style="margin-top: 20px; width: 100%;">确认支付</button>
+
+            <div class="payment-timer">
+                剩余支付时间：<span id="timer">05:00</span>
+            </div>
+            <button onclick="verifyPayment()">我已支付</button>
         </div>
     </div>
 
@@ -112,144 +192,152 @@
                 name: "无线蓝牙耳机",
                 price: 299,
                 image: "https://via.placeholder.com/300x200",
-                description: "这是一款高音质无线蓝牙耳机，支持主动降噪，续航时间长达20小时。"
+                description: "高保真音质，主动降噪，20小时续航",
+                details: "采用最新蓝牙5.2技术，IPX5防水等级，支持无线充电"
             },
             {
                 id: 2,
                 name: "智能手表",
                 price: 599,
                 image: "https://via.placeholder.com/300x200",
-                description: "这是一款多功能智能手表，支持心率监测、GPS定位和运动模式。"
-            },
-            {
-                id: 3,
-                name: "便携充电宝",
-                price: 159,
-                image: "https://via.placeholder.com/300x200",
-                description: "这是一款大容量便携充电宝，支持快充和双输出接口。"
+                description: "健康监测，运动模式，GPS定位",
+                details: "1.6英寸AMOLED屏幕，血氧饱和度检测，50米防水"
             }
         ];
 
+        // 系统状态
         let cart = [];
-        let selectedPaymentMethod = null;
+        let paymentTimer;
+        const PAYMENT_TIMEOUT = 300; // 5分钟（秒）
 
         // 初始化商品列表
         function renderProducts() {
             const container = document.getElementById('productList');
             container.innerHTML = products.map(product => `
-                <div class="product-card" onclick="viewProductDetail(${product.id})">
-                    <img src="${product.image}" alt="${product.name}" class="product-image">
-                    <h3 class="product-title">${product.name}</h3>
-                    <p class="product-price">￥${product.price}</p>
-                    <button class="add-to-cart" onclick="event.stopPropagation(); addToCart(${product.id})">加入购物车</button>
+                <div class="product-card" onclick="showDetail(${product.id})">
+                    <img src="${product.image}" class="product-image">
+                    <h3>${product.name}</h3>
+                    <p class="price">￥${product.price}</p>
+                    <button onclick="event.stopPropagation(); addToCart(${product.id})">加入购物车</button>
                 </div>
             `).join('');
         }
 
-        // 添加到购物车
+        // 购物车功能
         function addToCart(productId) {
             const product = products.find(p => p.id === productId);
-            const existingItem = cart.find(item => item.id === productId);
-            if (existingItem) {
-                existingItem.quantity += 1; // 如果商品已存在，数量加1
+            const existing = cart.find(item => item.id === productId);
+            
+            if (existing) {
+                existing.quantity++;
             } else {
-                cart.push({ ...product, quantity: 1 }); // 否则添加新商品
+                cart.push({...product, quantity: 1});
             }
             updateCart();
         }
 
-        // 从购物车删除
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCart();
-        }
-
-        // 更新商品数量
-        function updateQuantity(productId, newQuantity) {
-            const item = cart.find(item => item.id === productId);
-            if (item) {
-                item.quantity = Math.max(1, newQuantity); // 数量至少为1
-                updateCart();
-            }
-        }
-
-        // 更新购物车
         function updateCart() {
+            // 更新购物车显示
             document.getElementById('cartCount').textContent = cart.length;
             
             const cartItems = document.getElementById('cartItems');
             cartItems.innerHTML = cart.map(item => `
                 <li class="cart-item">
-                    <span>${item.name} - ￥${item.price}</span>
+                    <span>${item.name} x${item.quantity}</span>
                     <div class="quantity-control">
-                        <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                        <input type="number" value="${item.quantity}" min="1" onchange="updateQuantity(${item.id}, parseInt(this.value))">
-                        <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        <button onclick="updateQuantity(${item.id}, ${item.quantity-1})">-</button>
+                        <input type="number" value="${item.quantity}" 
+                               min="1" 
+                               onchange="updateQuantity(${item.id}, this.value)">
+                        <button onclick="updateQuantity(${item.id}, ${item.quantity+1})">+</button>
                     </div>
-                    <button onclick="removeFromCart(${item.id})">删除</button>
+                    <button onclick="removeItem(${item.id})">删除</button>
                 </li>
             `).join('');
 
-            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            document.getElementById('totalPrice').textContent = total;
+            // 计算总价
+            document.getElementById('totalPrice').textContent = 
+                cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         }
 
-        // 打开支付方式选择模态框
-        function openPaymentModal() {
-            if (cart.length === 0) {
-                alert('请先添加商品到购物车');
-                return;
+        function updateQuantity(productId, newQuantity) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity = Math.max(1, newQuantity);
+                updateCart();
             }
-            document.getElementById('paymentModal').style.display = 'flex';
         }
 
-        // 关闭支付方式选择模态框
-        function closePaymentModal() {
+        function removeItem(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        // 商品详情
+        function showDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            const modal = document.getElementById('detailModal');
+            
+            document.getElementById('detailContent').innerHTML = `
+                <img src="${product.image}" style="width:100%;height:300px;object-fit:cover">
+                <h2>${product.name}</h2>
+                <p class="price">￥${product.price}</p>
+                <p>${product.description}</p>
+                <hr>
+                <h4>商品详情</h4>
+                <p>${product.details}</p>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        // 支付功能
+        function showPayment() {
+            if (cart.length === 0) return alert("购物车为空");
+            
+            const modal = document.getElementById('paymentModal');
+            modal.style.display = 'flex';
+            startPaymentTimer();
+        }
+
+        function startPaymentTimer() {
+            let seconds = PAYMENT_TIMEOUT;
+            
+            paymentTimer = setInterval(() => {
+                seconds--;
+                const display = `${Math.floor(seconds/60).toString().padStart(2,'0')}:${(seconds%60).toString().padStart(2,'0')}`;
+                document.getElementById('timer').textContent = display;
+                
+                if (seconds <= 0) {
+                    clearInterval(paymentTimer);
+                    alert("支付超时");
+                    closePayment();
+                }
+            }, 1000);
+        }
+
+        function verifyPayment() {
+            const isPaid = confirm("请确认是否已完成支付？");
+            if (isPaid) {
+                clearInterval(paymentTimer);
+                alert("支付成功！");
+                cart = [];
+                updateCart();
+                closePayment();
+            }
+        }
+
+        // 通用功能
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        function closePayment() {
+            clearInterval(paymentTimer);
             document.getElementById('paymentModal').style.display = 'none';
         }
 
-        // 选择支付方式
-        function selectPayment(method) {
-            selectedPaymentMethod = method;
-            const paymentMethods = document.querySelectorAll('.payment-method');
-            paymentMethods.forEach(pm => pm.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-        }
-
-        // 处理支付
-        function processPayment() {
-            if (!selectedPaymentMethod) {
-                alert('请选择支付方式');
-                return;
-            }
-            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            alert(`使用${selectedPaymentMethod === 'wechat' ? '微信支付' : '支付宝支付'}成功！总金额：￥${total}`);
-            cart = [];
-            updateCart();
-            closePaymentModal();
-        }
-
-        // 显示商品详情模态框
-        function viewProductDetail(productId) {
-            const product = products.find(p => p.id === productId);
-            const modalContent = document.getElementById('modalContent');
-            if (product) {
-                modalContent.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" style="width:100%;height:300px;object-fit:cover;border-radius:10px;">
-                    <h2>${product.name}</h2>
-                    <p>价格: ￥${product.price}</p>
-                    <p>${product.description}</p>
-                `;
-                document.getElementById('productModal').style.display = 'flex';
-            }
-        }
-
-        // 关闭模态框
-        function closeModal() {
-            document.getElementById('productModal').style.display = 'none';
-        }
-
-        // 初始化页面
+        // 初始化
         renderProducts();
     </script>
 </body>
